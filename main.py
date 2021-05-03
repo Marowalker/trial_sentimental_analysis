@@ -9,13 +9,9 @@ import pickle
 
 
 print("Initialising classifier...")
-if not environment['is_training']:
-    f = open('data/model_params.pkl', 'rb')
-    model_parameters = pickle.load(f)
-OFF_Detector = OffensiveDetector(model_parameters)
 
 if environment['is_training']:
-    x_train, x_test, y_train, y_test = get_train_data(['data/train.csv', 'data/test.csv'], multiclass=False)
+    x_train, x_test, y_train, y_test = get_train_data('data/train.csv', multiclass=False)
     if environment['SMOTE_flag']:
         x_train, y_train = SMOTE_handling(x_train, y_train)
     elif environment['class_weights_flag']:
@@ -24,6 +20,8 @@ if environment['is_training']:
     # K-fold
     kfold = KFold(n_splits=5, shuffle=True, random_state=2)
     skf = StratifiedKFold(n_splits=5, random_state=2, shuffle=True)
+
+    OFF_Detector = OffensiveDetector(model_parameters)
 
     # Wrapping our classifier with Keras wrapper + Cross validation
     if environment['cross_validation_flag']:
@@ -65,9 +63,10 @@ if environment['is_training']:
 if environment['predict_test_set_flag']:
     print('\n')
     print("Predicting test set...")
-    data = OFF_Detector.predict_single("Fuck", environment['task'])
-    # data = OFF_Detector.predict("data/test.csv", environment['task'])
+    f = open('data/model_params.pkl', 'rb')
+    model_parameters = pickle.load(f)
+    # print(model_parameters['embedding'])
+    OFF_Detector = OffensiveDetector(model_parameters)
+    data = OFF_Detector.predict("data/test.csv", environment['task'])
     print(data)
-    # data[['id', 'comment_text', 'label']].to_csv('result.csv', index=False)
-
-
+    data[['id', 'comment_text', 'label']].to_csv('result.csv', index=False)

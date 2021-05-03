@@ -38,18 +38,18 @@ class OffensiveDetector:
                 word = values[0]
                 coefs = np.asarray(values[1:], dtype='float32')
                 embeddings_index[word] = coefs
-        elif model_parameters['embedding'] == 'word2vec':
+        elif model_parameters['embedding'] == 'bert':
+            f = open('embeddings/trial_bert_embedding.pkl', 'rb')
+            embeddings_index = pickle.load(f)
+            # f.close()
+        else:
             f = open('embeddings/word2vec.300d.txt', encoding="utf8")
             for line in f:
                 values = line.split()
                 word = values[0][:values[0].find("_")].lower()
                 coefs = np.asarray(values[1:], dtype='float32')
                 embeddings_index[word] = coefs
-                # f.close()
-        else:
-            f = open('embeddings/trial_bert_embedding.pkl', 'rb')
-            embeddings_index = pickle.load(f)
-            # f.close()
+        f.close()
 
         if model_parameters['embedding'] == 'bert':
             embedding_matrix = np.zeros((self.hparams['vocab_size'], 768))
@@ -116,7 +116,7 @@ class OffensiveDetector:
         model.add(Flatten())
         #        model.add(Dropout(0.2))
         if self.hparams['num_classes'] == 2:
-            model.add(Dense(1, activation='softmax'))
+            model.add(Dense(1, activation='sigmoid'))
         elif self.hparams['num_classes'] > 2:
             model.add(Dense(6, activation='softmax'))
 
